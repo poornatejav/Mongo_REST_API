@@ -1,26 +1,27 @@
 package controllers
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
 
 	"github.com/poornatejav/Mongo_REST_API/models"
+	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/julienschmidt/httprouter"
-	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
 
-type userController struct {
-	session *mgo.Session
+type UserController struct {
+	client *mongo.Client
 }
 
-func NewUserController(s *mgo.Session) *userController {
-	return &userController{session: s}
+func NewUserController(client *mongo.Client) *UserController {
+	return &UserController{client: client}
 }
 
-func (uc userController) GetUser(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+func (uc UserController) GetUser(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 
 	id := p.ByName("id")
 
@@ -32,8 +33,9 @@ func (uc userController) GetUser(w http.ResponseWriter, r *http.Request, p httpr
 
 	u := models.User{}
 
-	if err := uc.session.DB("mongo-golang").C("users").FindId(oid).One(&u); err != nil {
-		w.WriteHeader(404)
+	collection := uc.client.Database("API_test").Collection("users")
+	if err := collection.FindOne(context.Background(), bson.M{"_id": oid}).Decode(&u); err != nil {
+		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
@@ -48,12 +50,13 @@ func (uc userController) GetUser(w http.ResponseWriter, r *http.Request, p httpr
 
 }
 
-func (uc userController) CreateUser(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+func (uc UserController) CreateUser(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	u := models.User{}
 	json.NewDecoder(r.Body).Decode(&u)
 
 	u.Id = bson.NewObjectId()
-	uc.session.DB("mongo-golang").C("users").Insert(u)
+	collection := uc.client.Database("API_test").Collection("users")
+	_, err := collection.InsertOne(context.Background(), u)
 	uj, err := json.Marshal(u)
 	if err != nil {
 		fmt.Println(err)
@@ -65,7 +68,7 @@ func (uc userController) CreateUser(w http.ResponseWriter, r *http.Request, p ht
 
 }
 
-func (uc userController) DeleteUser(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+func (uc UserController) DeleteUser(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 
 	id := p.ByName("id")
 
@@ -75,7 +78,8 @@ func (uc userController) DeleteUser(w http.ResponseWriter, r *http.Request, p ht
 
 	oid := bson.ObjectIdHex(id)
 
-	if err := uc.session.DB("mongo-golang").C("users").RemoveId(oid); err != nil {
+	collection := uc.client.Database("API_test").Collection("users")
+	if _, err := collection.DeleteOne(context.Background(), bson.M{"_id": oid}); err != nil {
 		w.WriteHeader(404)
 		return
 	}
