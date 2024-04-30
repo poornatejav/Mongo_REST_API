@@ -1,4 +1,4 @@
-module main
+module github.com/poornatejav/Mongo_REST_API
 
 go 1.22.1
 

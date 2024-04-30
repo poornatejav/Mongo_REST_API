@@ -3,9 +3,8 @@ package main
 import (
 	"net/http"
 
-	"github.com/poornatejav/Mongo_REST_API/controllers"
-
 	"github.com/julienschmidt/httprouter"
+	"github.com/poornatejav/Mongo_REST_API/controllers"
 	"gopkg.in/mgo.v2"
 )
 
@@ -14,9 +13,9 @@ func main() {
 	r := httprouter.New()
 	uc := controllers.NewUserController(getSession())
 
-	r.GET("user/id", uc.getUser)
-	r.POST("user", uc.createUser)
-	r.DELETE("user/:id", uc.deleteUser)
+	r.GET("user/id", uc.GetUser)
+	r.POST("user", uc.CreateUser)
+	r.DELETE("user/:id", uc.DeleteUser)
 
 	http.ListenAndServe("localhost:8080", r)
 

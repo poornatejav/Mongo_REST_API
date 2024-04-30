@@ -3,8 +3,9 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
-	"main/models"
 	"net/http"
+
+	"github.com/poornatejav/Mongo_REST_API/models"
 
 	"github.com/julienschmidt/httprouter"
 	"gopkg.in/mgo.v2"
@@ -19,7 +20,7 @@ func NewUserController(s *mgo.Session) *userController {
 	return &userController{session: s}
 }
 
-func (uc userController) getUser(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+func (uc userController) GetUser(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 
 	id := p.ByName("id")
 
@@ -47,7 +48,7 @@ func (uc userController) getUser(w http.ResponseWriter, r *http.Request, p httpr
 
 }
 
-func (uc userController) createUser(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+func (uc userController) CreateUser(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	u := models.User{}
 	json.NewDecoder(r.Body).Decode(&u)
 
@@ -64,7 +65,7 @@ func (uc userController) createUser(w http.ResponseWriter, r *http.Request, p ht
 
 }
 
-func (uc userController) deleteUser(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+func (uc userController) DeleteUser(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 
 	id := p.ByName("id")
 
